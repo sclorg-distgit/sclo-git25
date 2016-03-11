@@ -14,7 +14,7 @@ Summary: Package that installs %scl
 Name: %scl_name
 # should match the RHSCL version
 Version: 1.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 Group: Applications/File
 Source0: README
 Source1: LICENSE
@@ -89,7 +89,8 @@ rm -rf %{buildroot}
 mkdir -p %{buildroot}%{_scl_scripts}/root
 cat >> %{buildroot}%{_scl_scripts}/enable << EOF
 export PATH=%{_bindir}\${PATH:+:\${PATH}}
-export MANPATH=%{_mandir}:\${MANPATH}
+export MANPATH=%{_mandir}\${MANPATH:+:\${MANPATH}}
+export PERL5LIB=%{_scl_root}%{perl_vendorlib}\${PERL5LIB:+:\${PERL5LIB}}
 EOF
 
 # install generated man page
@@ -108,11 +109,9 @@ EOF
 # Simple copy of context from system root to DSC root.
 # In case new version needs some additional rules or context definition,
 # it needs to be solved.
-semanage fcontext -a -e /var/log/mongodb /var/log/%{scl_prefix}mongodb >/dev/null 2>&1 || :
-semanage fcontext -a -e /usr/libexec/git-core/git-daemon /usr/libexec/git-core/%{scl_prefix}git-daemon >/dev/null 2>&1 || :
 semanage fcontext -a -e / %{_scl_root} >/dev/null 2>&1 || :
-selinuxenabled && load_policy >/dev/null 2>&1 || :
 restorecon -R %{_scl_root} >/dev/null 2>&1 || :
+selinuxenabled && load_policy || :
 
 %files
 
@@ -128,7 +127,10 @@ restorecon -R %{_scl_root} >/dev/null 2>&1 || :
 %{_root_sysconfdir}/rpm/macros.%{scl_name_base}-scldevel
 
 %changelog
-* Fri Mar 04 2016 Jaroslaw Polok <jaroslaw.polok@cern.ch> 1.0
+* Fri Mar 11 2016 Jaroslaw Polok <jaroslaw.polok@cern.ch> 1.0-2
+- fixed README, selinux contexts and PERL5LIB 
+
+* Fri Mar 04 2016 Jaroslaw Polok <jaroslaw.polok@cern.ch> 1.0-1
 - reuse git19 spec for git25
 
 * Tue Aug 12 2014 Ondrej Oprala <ooprala@redhat.com> 1.2-4
